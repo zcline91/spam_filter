@@ -12,6 +12,7 @@ from sklearn.linear_model import SGDClassifier
 from data_processing.preprocessing import load_train_test_classes, \
     load_train_test_docs
 from data_processing.spacy import Lemmatizer
+from data_processing.spacy.dochandling import DocCreatorB
 
 
 # Load the data
@@ -33,10 +34,10 @@ subject_bow_pipeline = Pipeline([
     ('norm', Normalizer()),
 ])
 
-clf = Pipeline([
+fit_clf = Pipeline([
     ('feature_eng', ColumnTransformer([
-            ('body_bow', body_bow_pipeline, 'body_doc'),
-            ('subject_bow', subject_bow_pipeline, 'subject_doc'),
+            ('body_bow', body_bow_pipeline, 1),
+            ('subject_bow', subject_bow_pipeline, 0),
         ])),
     ('sgd', SGDClassifier(loss='modified_huber', 
         class_weight={0: .85, 1: .15}, alpha=2e-5,
@@ -44,13 +45,18 @@ clf = Pipeline([
 ])
 
 print("Training model...")
-clf.fit(train_set, y_train)
+fit_clf.fit(train_set, y_train)
 
 print("Testing model...")
-y_test_predict = clf.predict(test_set)
+y_test_predict = fit_clf.predict(test_set)
 
 print(classification_report(y_test, y_test_predict, 
     target_names=['ham', 'spam'], digits=5))
 
 print(f"F_half score: {fbeta_score(y_test, y_test_predict, beta=.5)}")
+
+clf = Pipeline([
+    ('create_docs', DocCreatorB()),
+    ('fit_clf', fit_clf),
+])
 joblib.dump(clf, 'model.joblib')

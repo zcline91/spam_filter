@@ -7,7 +7,7 @@ from pathlib import Path
 
 from data_processing.corpus import (EnronCorpusExtractor, LingCorpusExtractor, 
     TrecCorpusExtractor)
-from settings import CORPORA_CSV_PATH, CORPUS_FILENAMES
+from data_processing.settings import CORPORA_CSV_PATH, CORPUS_FILENAMES
 
 
 EXTRACTORS = {'enron': EnronCorpusExtractor, 'ling': LingCorpusExtractor,

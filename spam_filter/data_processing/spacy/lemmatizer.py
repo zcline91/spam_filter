@@ -28,7 +28,6 @@ class Lemmatizer(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X, y=None):
-        assert isinstance(X, pd.Series)
         lemma_counts = [
             {self.stringstore[lemma_hash]: count 
                 for lemma_hash, count in 
@@ -36,7 +35,7 @@ class Lemmatizer(BaseEstimator, TransformerMixin):
             }
             for doc in X
         ]
-        return pd.Series(lemma_counts, index=X.index)
+        return pd.Series(lemma_counts)
 
     def exclude_token(self, token):
         conditions = [

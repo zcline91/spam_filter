@@ -2,6 +2,7 @@ from pathlib import Path
 import logging
 
 import pandas as pd
+import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 import spacy
 from spacy.tokens import Doc, DocBin
@@ -14,8 +15,8 @@ logger.setLevel(logging.DEBUG)
 MAX_DOCBIN_SIZE = 50_000
 
 
-class DocBinError(Exception):
-    pass
+# class DocBinError(Exception):
+#     pass
 
 
 Doc.set_extension("identifier", default=None)
@@ -33,7 +34,7 @@ class DocBaseMixin:
             raise DocBinError("The number of provided index names "
                 f"({len(index_names)}) and index dtypes ({len(index_dtypes)}) "
                 "do not match.")
-        self.docbin_path = Path(docbin_path)
+        self.docbin_path = Path(docbin_path) if docbin_path is not None else None
         self.index_names = index_names
         self.index_dtypes = index_dtypes
 
@@ -152,27 +153,34 @@ class DocCreator(BaseEstimator, TransformerMixin, DocBaseMixin):
         super().__init__(docbin_path, index_names, index_dtypes)
 
     def fit(self, X, y=None):
-         # No fitting of the transformer is necessary
+        # No fitting of the transformer is necessary
         return self
+    
+    def set_output(self, *arg, **kwarg):
+        pass
 
     def transform(self, X, y=None):
-        self.check_index_args_against_series(X)
-        mem_size = X.memory_usage()
-        msg = (f"Running spacy pipeline on Series '{X.name}' of length "
-            f"{len(X)} (size in memory: {mem_size / 1_000_000.0:.3f} MB).")
-        if mem_size > 50 * 10**6: # Over 50 MB
-            msg += " This may take a while..."
-        logger.info(msg)
+        # self.check_index_args_against_series(X)
+        try:
+            mem_size = X.memory_usage()
+            msg = (f"Running spacy pipeline on Series '{X.name}' of length "
+                f"{len(X)} (size in memory: {mem_size / 1_000_000.0:.3f} MB).")
+            if mem_size > 50 * 10**6: # Over 50 MB
+                msg += " This may take a while..."
+            logger.info(msg)
+        except AttributeError:
+            pass
         docs = []
         for doc, context in nlp.pipe(zip(X, X.index), as_tuples=True, 
                 disable=["parser", "ner"]):
             doc._.identifier = context
             docs.append(doc)
-        logger.info("Creating an index for the created docs")
-        self.create_index(docs)
-        logger.info("Checking that the index matches that of Series "
+        if self.index_names is not None:
+            logger.info("Creating an index for the created docs")
+            self.create_index(docs)
+            logger.info("Checking that the index matches that of Series "
             f"'{X.name}'")
-        self.check_index_against_series(X)
+            self.check_index_against_series(X)
         # Save the docbin to disk for later use
         if self.docbin_path is not None:
             logger.info(f"Creating docbin(s) for Series '{X.name}'")
@@ -196,4 +204,22 @@ class DocCreator(BaseEstimator, TransformerMixin, DocBaseMixin):
                     logger.info(f"Saving docbin {i+1} of {len(docbins)} to "
                         f"{new_path}")
                     docbin.to_disk(new_path)
-        return pd.Series(docs, index=self.index)
+        try:
+            return pd.DataFrame({'doc': docs}, index=self.index)
+        except AttributeError: # if there's no index attribute
+            return pd.DataFrame({'doc': docs})
+
+
+class DocCreatorB(BaseEstimator, TransformerMixin):
+
+    def __init__(self):
+        self.nlp = spacy.load("en_core_web_sm")
+    
+    def fit(self, X, y=None):
+        # No fitting of the transformer is necessary
+        return self
+
+    def transform(self, X, y=None):
+        return np.array(list(
+            self.nlp.pipe(X.to_numpy().flat, disable=["parser", "ner"])
+            ), dtype=object).reshape(X.shape)

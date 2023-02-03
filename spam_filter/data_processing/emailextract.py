@@ -74,7 +74,7 @@ def extract_email_data(email_obj, accepted_charsets=ACCEPTED_CHARSETS):
       other content types, e.g.
         - for a part of type 'img/jpeg', writing '\\nIMAGE\\n' rather than '' 
           to the contents field"""
-    subject = email_obj['subject']
+    subject = str(email_obj['subject'])
     content = ''
     for part in email_obj.walk():
         if part.is_multipart():
