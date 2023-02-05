@@ -9,14 +9,14 @@ from sklearn.linear_model import SGDClassifier
 
 
 
-from data_processing.preprocessing import load_train_test_classes, \
-    load_train_test_docs
-from data_processing.spacy import Lemmatizer
-from data_processing.spacy.dochandling import DocCreatorB
+from data_processing import load_train_test_classes, load_train_test_docs, \
+    Lemmatizer, DocCreator
 
 
 # Load the data
+print("Loading classes (labels)...")
 train_classes, test_classes = load_train_test_classes()
+print("Loading docbins...")
 train_set, test_set = load_train_test_docs(train_classes, test_classes)
 y_train = train_classes.to_numpy(dtype='int')
 y_test = test_classes.to_numpy(dtype='int')
@@ -36,8 +36,8 @@ subject_bow_pipeline = Pipeline([
 
 fit_clf = Pipeline([
     ('feature_eng', ColumnTransformer([
-            ('body_bow', body_bow_pipeline, 1),
             ('subject_bow', subject_bow_pipeline, 0),
+            ('body_bow', body_bow_pipeline, 1),
         ])),
     ('sgd', SGDClassifier(loss='modified_huber', 
         class_weight={0: .85, 1: .15}, alpha=2e-5,
@@ -59,4 +59,6 @@ clf = Pipeline([
     ('create_docs', DocCreator()),
     ('fit_clf', fit_clf),
 ])
-joblib.dump(clf, 'model.joblib')
+model_filename = 'model.joblib'
+joblib.dump(clf, model_filename)
+print(f"Model saved to {model_filename}")

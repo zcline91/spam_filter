@@ -126,7 +126,7 @@ class BaseCorpusExtractor:
             try:
                 email_obj = email.message_from_bytes(filepath.read_bytes(),
                                                     policy=default)
-            except FileNotFoundError as e:
+            except (FileNotFoundError, OSError) as e:
                 error_counter["missing"] += 1
                 logger.exception(e)
                 continue

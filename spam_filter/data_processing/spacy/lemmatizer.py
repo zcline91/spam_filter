@@ -1,22 +1,19 @@
-import copy
-
 import pandas as pd
+import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 import spacy 
 from spacy.attrs import LEMMA
 
 
-nlp = spacy.load("en_core_web_sm")
-
 class Lemmatizer(BaseEstimator, TransformerMixin):
-    """A transformer that returns a pandas Series of dictionaries
-    of the form {<lemma>: <count>} for an input pandas Series of
-    spacy Doc objects. Only lemmas in the default spacy vocab 
-    stringstore (for "en_core_web_sm") are returned in the counts."""
+    """A transformer that takes spacy Doc objects as input and 
+    returns dicts of the form {<lemma>: <count>}. Only lemmas in 
+    the default spacy vocab stringstore (for "en_core_web_sm") 
+    are returned in the counts."""
 
-    # Make a copy of the initial string store in order to test if lemmas 
-    # are known words or not.
-    stringstore = copy.copy(nlp.vocab.strings)
+    # Store the model as a class attribute in order to check the 
+    # stringstore for known lemmas.
+    nlp = spacy.load("en_core_web_sm")
 
     def __init__(self, del_stop=False, del_punct=True, del_num=False):
         self.del_stop = del_stop
@@ -28,18 +25,19 @@ class Lemmatizer(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X, y=None):
-        lemma_counts = [
-            {self.stringstore[lemma_hash]: count 
+        if isinstance(X, pd.DataFrame) or isinstance(X, pd.Series):
+            X = X.to_numpy()
+        lemma_counts = [{
+            self.nlp.vocab.strings[lemma_hash]: count 
                 for lemma_hash, count in 
                     doc.count_by(LEMMA, exclude=self.exclude_token).items()
-            }
-            for doc in X
+            } for doc in X.flat
         ]
-        return pd.Series(lemma_counts)
+        return np.array(lemma_counts).reshape(X.shape)
 
     def exclude_token(self, token):
         conditions = [
-            token.lemma not in self.stringstore,
+            token.lemma not in self.nlp.vocab.strings,
             token.like_email,
             token.like_url,
         ]
