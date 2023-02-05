@@ -1,6 +1,6 @@
 import logging 
 
-
+import pandas as pd
 from bs4 import BeautifulSoup
 
 
@@ -89,3 +89,11 @@ def extract_email_data(email_obj, accepted_charsets=ACCEPTED_CHARSETS):
         else:
             logger.debug(f"Skipping email part of type {contenttype}")
     return (subject, content)
+
+
+def email_to_df(X):
+    """Transforms the email objects in an iterable X (e.g. Series, 
+    list, array) into a DataFrame with 'subject' and 'body' strings.
+    """
+    subs_and_bodies = [extract_email_data(email_obj) for email_obj in X]
+    return pd.DataFrame(subs_and_bodies, columns=['subject', 'body'])
