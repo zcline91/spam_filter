@@ -4,7 +4,7 @@ import pandas as pd
 
 from .email_cleaning_pipelines import corpus_prep
 from .test_set_creation import split_train_test_by_id
-from ..spacy.dochandling import DocBinLoader
+from ..spacy import load_docbins, DocBinError
 from ..settings import CORPORA_CSV_PATH, CORPUS_FILENAMES, TEST_RATIO, \
     DOCBIN_PATH, DOCBIN_FILENAMES, SPAM_CLASS_PATH, SPAM_CLASS_FILENAMES
 
@@ -78,22 +78,37 @@ def load_train_test_classes(path=SPAM_CLASS_PATH,
 
 def load_train_test_docs(train_classes, test_classes, path=DOCBIN_PATH, 
         docbin_names=DOCBIN_FILENAMES):
-    """Load email corpora data as two Series of spacy Docs."""
+    """Load email corpora data as two DataFrames of spacy Docs."""
     params = {'index_names': ('corpus', 'path'), 
         'index_dtypes': ('string[pyarrow]', 'string[pyarrow]')}
-    docs = {
-        data_set: {
-            field: DocBinLoader(path / filename, **params)
-            for field, filename in set_field_files.items()
-        }
-        for data_set, set_field_files in docbin_names.items()
-    }
-    train_set = pd.DataFrame({
-        'body_doc': docs['train']['body'].transform(train_classes), 
-        'subject_doc': docs['train']['subject'].transform(train_classes),
-    })
-    test_set = pd.DataFrame({
-        'body_doc': docs['test']['body'].transform(test_classes), 
-        'subject_doc': docs['test']['subject'].transform(test_classes),
-    })
+    # Load the training set docs
+    train_sub_docs = load_docbins(path / docbin_names['train']['subject'], 
+        **params)
+    train_body_docs = load_docbins(path / docbin_names['train']['body'], 
+        **params)
+    # Check that the docs indeed match the index of the training classes series
+    for docset in [train_sub_docs, train_body_docs]:
+        if not (docset.index.sort_values().equals(
+                train_classes.index.sort_values())):
+            raise DocBinError("The train subject and/or body docbin does not"
+                "have an index matching that of the passed train_classes "
+                "Series.")
+
+    # Load the test set docs
+    test_sub_docs = load_docbins(path / docbin_names['test']['subject'], 
+        **params)
+    test_body_docs = load_docbins(path / docbin_names['test']['body'], 
+        **params)
+    # Check that the docs indeed match the index of the test classes series
+    for docset in [test_sub_docs, test_body_docs]:
+        if not (docset.index.sort_values().equals(
+                test_classes.index.sort_values())):
+            raise DocBinError("The test subject and/or body docbin does not"
+                "have an index matching that of the passed test_classes "
+                "Series.")
+
+    train_set = pd.DataFrame({'subject_doc': train_sub_docs, 
+        'body_doc': train_body_docs}).reindex(train_classes.index)
+    test_set = pd.DataFrame({'subject_doc': test_sub_docs, 
+        'body_doc': test_body_docs}).reindex(test_classes.index)
     return train_set, test_set

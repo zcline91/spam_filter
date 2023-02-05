@@ -4,10 +4,8 @@ import logging
 import argparse
 from pathlib import Path
 
-from data_processing.preprocessing.data_loading import load_train_test_csvs
-from data_processing.spacy.dochandling import DocCreator
-from data_processing.settings import CORPORA_CSV_PATH, CORPUS_FILENAMES, \
-    DOCBIN_PATH, DOCBIN_FILENAMES
+from data_processing import load_train_test_csvs, create_docbins, \
+    CORPORA_CSV_PATH, CORPUS_FILENAMES, DOCBIN_PATH, DOCBIN_FILENAMES
 
 # Set up logging 
 logger = logging.getLogger(__name__)
@@ -36,6 +34,7 @@ def get_arguments():
     parser.add_argument('--field', choices=["body", "subject", "all"], 
                         default="all",
                         help="the field to run the spacy pipeline on")
+    parser.add_argument('--batchsize', type=int, default=2000)
     parser.add_argument('-d', '--output_dir', type=existing_directory, 
                         default=DOCBIN_PATH,
                         help="the directory to output the docbin file(s)")
@@ -59,7 +58,8 @@ def parse_arguments(args):
     - the path of the corpus csv files
     - a list of tuples of the form (data_set [train/test], 
       field [body/subject], path) where the spacy docbin created for each 
-      given data_set and field will be saved in path."""
+      given data_set and field will be saved in path.
+    - the batch size for the docbins"""
     # Check if output directory exists
     if not args.output_dir.exists():
         raise FileNotFoundError(f"{args.output_dir} does not exist")
@@ -103,21 +103,20 @@ def parse_arguments(args):
     handler.setLevel(loglevel)
     # Add the handler to the root logger
     logging.getLogger().addHandler(handler)
-    return args.corpus_dir, set_field_path_list
+    return args.corpus_dir, set_field_path_list, args.batchsize
 
 
 def main():
     args = get_arguments()
-    corpus_dir, set_field_path_list = parse_arguments(args)
+    corpus_dir, set_field_path_list, batch_size = parse_arguments(args)
     train_set, test_set = load_train_test_csvs(corpus_dir, 
         corpus_names=CORPUS_FILENAMES)
     data_sets = {'train': train_set, 'test': test_set}
     for data_set_name, field, path in set_field_path_list:
         logger.info(f"Creating docbin for {data_set_name}[{field}] and "
             f"storing in {path}")
-        dc = DocCreator(path, index_names=('corpus', 'path'), 
-            index_dtypes=('string[pyarrow]', 'string[pyarrow]'))
-        dc.transform(data_sets[data_set_name][field])
+        create_docbins(data_sets[data_set_name][field], path, 
+            batch_size=batch_size)
 
 
 if __name__ == '__main__':

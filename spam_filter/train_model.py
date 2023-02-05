@@ -56,7 +56,7 @@ print(classification_report(y_test, y_test_predict,
 print(f"F_half score: {fbeta_score(y_test, y_test_predict, beta=.5)}")
 
 clf = Pipeline([
-    ('create_docs', DocCreatorB()),
+    ('create_docs', DocCreator()),
     ('fit_clf', fit_clf),
 ])
 joblib.dump(clf, 'model.joblib')
