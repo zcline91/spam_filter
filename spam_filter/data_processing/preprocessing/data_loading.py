@@ -26,11 +26,11 @@ def load_corpora_csvs(path=CORPORA_CSV_PATH, corpus_names=CORPUS_FILENAMES):
     def corpora_gen():
         for corpus_name, filename in corpus_names.items():
             df = pd.read_csv(path / filename, 
-                dtype={"path": "string[pyarrow]", "spam": "bool", 
-                       "subject": "string[pyarrow]", "body": "string[pyarrow]"}
+                dtype={"path": "string", "spam": "bool", 
+                       "subject": "string", "body": "string"}
                 )
             df.insert(0, 'corpus', corpus_name)
-            df['corpus'] = df['corpus'].astype('string[pyarrow]')
+            df['corpus'] = df['corpus'].astype('string')
             df.set_index(['corpus', 'path'], inplace=True)
             yield df
     return pd.concat(corpora_gen())
@@ -67,7 +67,7 @@ def load_train_test_classes(path=SPAM_CLASS_PATH,
     train_classes, test_classes = (
         pd.read_csv(
             path, 
-            dtype={'corpus': 'string[pyarrow]', 'path': 'string[pyarrow]', 
+            dtype={'corpus': 'string', 'path': 'string', 
                 'spam': 'boolean'},
             index_col=('corpus', 'path')
         )
@@ -80,7 +80,7 @@ def load_train_test_docs(train_classes, test_classes, path=DOCBIN_PATH,
         docbin_names=DOCBIN_FILENAMES):
     """Load email corpora data as two DataFrames of spacy Docs."""
     params = {'index_names': ('corpus', 'path'), 
-        'index_dtypes': ('string[pyarrow]', 'string[pyarrow]')}
+        'index_dtypes': ('string', 'string')}
     # Load the training set docs
     train_sub_docs = load_docbins(path / docbin_names['train']['subject'], 
         **params)
