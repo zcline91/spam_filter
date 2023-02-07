@@ -32,7 +32,8 @@ class DocCreator(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         if isinstance(X, pd.DataFrame) or isinstance(X, pd.Series):
             X = X.to_numpy()
-        docs = list(self.nlp.pipe(X.flat, disable=["parser", "ner"],
+        docs = np.empty(X.size, object)
+        docs[:] = list(self.nlp.pipe(X.flat, disable=["parser", "ner"],
             n_process=-1, batch_size=250))
         return np.array(docs, dtype=object).reshape(X.shape)
 
