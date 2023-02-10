@@ -6,7 +6,7 @@ from sklearn.preprocessing import FunctionTransformer
 from data_processing import email_to_df
 
 
-clf = joblib.load('model.joblib')
+clf = joblib.load('text_model.joblib')
 
 pred_pipeline = Pipeline([
     ('email_prep', FunctionTransformer(email_to_df)),

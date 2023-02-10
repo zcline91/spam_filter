@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -8,13 +8,11 @@
 
     <title>Spam Cruncher</title>
   </head>
-    <body>
-        <!-- <h1>Input subject</h1>
-        <p>{{input_subject}}</p>
-        <h1>Input body</h1>
-        <p>{{input_body}}</p> -->
-        <h1>Probabilities</h1>
-        <p >Probabilities: {{ ham_prob }}% likely to be ham and {{ spam_prob }}% likely to be spam.</p>
-    </body>
-    <a href="{{ url_for('landing_page') }}" class="btn btn-primary">Try another input</a>
-</html>
+
+  <form action="" method="post" enctype=multipart/form-data>
+    <form method=post enctype=multipart/form-data>
+        <label> Upload a .eml file here.</label>
+        <input type=file name=file>
+        <input type=submit value=Upload>
+      </form>
+</form>

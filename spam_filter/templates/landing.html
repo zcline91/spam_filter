@@ -13,18 +13,12 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
     <h1>Welcome to Zach and Michael's Spam Cruncher!</h1>
-    <p> This model outputs probabilities that a written email (eventually uploaded .eml file)
+    <p> This model outputs probabilities that a written email or .eml file
         is spam or ham (i.e., not spam). The predictions come from an SGD classifier trained on
         publicly available spam corpora (enron, ling, and trec).</p>
-    <form action="" method="post">
-        <div class="form-group">
-            <label for="subject">What is the subject of the email?</label>
-            <textarea class="form-control" rows="5" name="subject" ></textarea>
-            <label for="body">What is the body of the email?</label>
-            <textarea class="form-control" rows="5" name="body" ></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Get spam/ham probabilities (takes up to a minute)</button>
-    </form>
+
+        <a href="text" class="btn btn-primary">Enter a text email</a>
+        <a href="file" class="btn btn-primary">Upload a .eml file</a>
 
   </body>
 </html>
