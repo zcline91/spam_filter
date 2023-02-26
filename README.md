@@ -53,30 +53,3 @@
     ```
     The output of the first command, `text_model.joblib` accepts dataframes or 2D arrays of (subject, body) emails.
     The output of the second command, `object_model.joblib` accepts iterables of email objects (as created by the email package).
-
-# API Endpoints
-
-## `/api/predict/text` 
-
-### Input
-
-```jsonc
-{
-    'instances': [{'subject': <str>, 'body': <str>},]
-    'return_prob': <boolean>, // default: true
-    'return_inputs': <boolean> // default: false
-}
-```
-
-### Output
-
-```jsonc
-[
-    {
-        'prediction': <boolean>,
-        'spam_probability': <number>, // optional
-        'subject_head': <str>, // optional
-        'body_head': <str>, //optional
-    },
-]
-```
