@@ -1,7 +1,8 @@
 import logging
 
+from data_processing.preprocessing import load_train_test_csvs
 from data_processing import CORPORA_CSV_PATH, CORPUS_FILENAMES, \
-    TEST_RATIO, SPAM_CLASS_PATH, SPAM_CLASS_FILENAMES, load_train_test_csvs
+    TEST_RATIO, SPAM_CLASS_PATH, SPAM_CLASS_FILENAMES
 
 
 handler = logging.StreamHandler()

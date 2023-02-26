@@ -4,8 +4,10 @@ import logging
 import argparse
 from pathlib import Path
 
-from data_processing import load_train_test_csvs, create_docbins, \
-    CORPORA_CSV_PATH, CORPUS_FILENAMES, DOCBIN_PATH, DOCBIN_FILENAMES
+from data_processing.preprocessing import load_train_test_csvs, create_docbins
+from data_processing import CORPORA_CSV_PATH, CORPUS_FILENAMES, DOCBIN_PATH, \
+    DOCBIN_FILENAMES
+
 
 # Set up logging 
 logger = logging.getLogger(__name__)
