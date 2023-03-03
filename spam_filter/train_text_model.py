@@ -8,9 +8,9 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.linear_model import SGDClassifier
 
 
-
-from data_processing import load_train_test_classes, load_train_test_docs, \
-    Lemmatizer, DocCreator
+from data_processing.preprocessing import load_train_test_classes, \
+    load_train_test_docs
+from data_processing import Lemmatizer, DocCreator
 
 
 # Load the data
