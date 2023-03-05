@@ -10,6 +10,14 @@ You can also [see the spam filter in action here](https://mreeks91-spam-filter-s
 
 This repository contains the source to create the models used in the API (really one underlying classification model, but two finished models for accepting two different types of input).
 
+- [Reproducing the Model(s)](#reproducing-the-models)
+- [Design and Development Process](#design-and-development-process)
+  - [ETL / Preprocessing](#etl--preprocessing)
+    - [Corpus Gathering and Extraction](#corpus-gathering-and-extraction)
+    - [Preprocessing Text](#preprocessing-text)
+  - [Feature Engineering](#feature-engineering)
+  - [Training the model](#training-the-model)
+
 ## Reproducing the Model(s)
 
 1. Create a virtual environment and install the dependencies in requirements.txt, e.g. using virtualenv:
